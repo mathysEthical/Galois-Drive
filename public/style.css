@@ -1,0 +1,19 @@
+.icon img{
+    width: 50px;
+}
+
+.file *{
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 20px;
+    font-family: sans-serif;
+}
+
+.file{
+    margin: 10px;
+    cursor: pointer;
+}
+
+.file:hover{
+    background-color: rgb(217, 217, 217);
+}
