@@ -31,6 +31,10 @@ const oauth2Client = new google.auth.OAuth2(
  * @returns {string} fileId
  */
   async function uploadFile(data,fileName,parentFolderId=SECURE_FOLDER_ID) {
+    if(parentFolderId=="root"){
+      parentFolderId=SECURE_FOLDER_ID
+
+    }
     try {
       let response = await drive.files.create({
         requestBody: {
@@ -167,9 +171,9 @@ async function downloadFile(fileId){
     try {
       //id,name,quotaBytesUsed,mimeType
       const response = await drive.files.list({fields: 'files(*)',q: `'${parentID}' in parents`});
-  
       return response.data;
     } catch (error) {
+      console.log("error",error)
       return error.message;
     }
   }
