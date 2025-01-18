@@ -129,22 +129,6 @@ function arrayBufferToB64(arrayBuffer) {
 
 async function uploadFile(data,fileName){
     debugData=data
-
-    // // json version
-    // let req=await fetch("/api/upload/"+currentDir,{
-    //     method:"POST",
-    //     headers:{
-    //         "Content-Type":"application/json"
-    //     },
-    //     body: JSON.stringify({
-    //         fileName: fileName,
-    //         file: arrayBufferToB64(data)
-    //     })
-    // })
-    // let res=await req.json()
-    // console.log(res)
-
-    // form version
     let formData=new FormData()
     formData.append("fileName",fileName)
     formData.append("file",new Blob([data]))
@@ -153,8 +137,9 @@ async function uploadFile(data,fileName){
         body: formData
     })
     let res=await req.json()
-    console.log(res)
-
+    setTimeout(() => {
+        explore(currentDir)
+    }, 5000);
 }
 
 var drop;

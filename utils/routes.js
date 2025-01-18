@@ -82,9 +82,6 @@ function startWebServer(){
       let fileId=req.params.id
       let fileName=req.body.fileName
       let fileData=req.files[0].buffer
-      let size=fileData.length
-      console.log(fileData)
-      console.log(size)
 
       let rawData=fileData
       try {
