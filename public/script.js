@@ -2,15 +2,68 @@ let currentDir="root"
 let filesDiv=document.getElementById("files")
 let pathDiv=document.getElementById("path")
 let queryParams = new URLSearchParams(window.location.search);
+let loadingBar=document.getElementById("loading")
+let parent="root"
+let isLoading=false;
 if(queryParams.get("d")!=null){
     currentDir=queryParams.get("d")
 }
 let debugData;
 
+function exploreParent(){
+    explore(parent)
+}
+
+function loadingBarAnimation(progress){
+    loadingBar.style.width=`${Math.round((1-Math.exp(-progress))*100)}%`
+    setTimeout(()=>{
+        if(isLoading){
+            progress+=1;
+            loadingBarAnimation(progress)
+        }else{
+            loadingBar.style.width=`100%`
+            loadingBar.style.display="none"
+        }
+    },300)
+}
+
+function endLoading(){
+    isLoading=false;
+}
+
+function startLoading(){
+    loadingBar.style.display="block"
+    loadingBar.style.width="0%"
+    isLoading=true;
+    let progress=0;
+    loadingBarAnimation(progress);
+}
+
+
 async function list(folderID){
     let req=await fetch("/api/list/"+folderID)
     let res=await req.json()
+    parent=res.parentFolderId
     return res
+}
+
+async function folderCreation(){
+    let folderName = prompt("Please enter folder name:", "New Folder");
+    createFolder(folderName, currentDir)
+}
+
+async function createFolder(folderName, parentFolderId){
+    let req=await fetch("/api/createFolder/"+parentFolderId, {
+        method: "POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body: JSON.stringify({
+            folderName: folderName
+        })
+    })
+    let res=await req.json()
+    explore(currentDir)
 }
 
 async function downloadFile(fileID,fileName){
@@ -32,6 +85,7 @@ async function deleteFile(fileID){
 }
 
 async function explore(fileID){
+    startLoading();
     currentDir=fileID
     window.history.pushState("","","/?d="+currentDir)
     let filesHTML=""
@@ -56,6 +110,7 @@ async function explore(fileID){
     })
     filesDiv.innerHTML=filesHTML
     pathDiv.innerHTML=path
+    endLoading()
 }
 
 function arrayBufferToB64(arrayBuffer) {

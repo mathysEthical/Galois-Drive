@@ -21,6 +21,9 @@ if(DEBUG_REFRESH_TOKEN!="NO"){
       version: 'v3',
       auth: oauth2Client,
     });
+    console.log("connected to drive by debug token")
+    console.log("Encrpt / Descrypt test:",decrypt(AES_KEY,encrypt(AES_KEY,Buffer.from([181]))))
+    
 }
 
 function setCredentials(code) {
@@ -43,7 +46,7 @@ function setCredentials(code) {
 
 /**
  * 
- * @param {string} data 
+ * @param {Buffer} data 
  * @param {string} fileName 
  * @param {string} parentFolderId 
  * @returns {string} fileId
@@ -55,6 +58,7 @@ async function uploadFile(data, fileName, parentFolderId = SECURE_FOLDER_ID) {
   }
   try {
     let bufferBody=encrypt(AES_KEY, data)
+
     let streamBody=new stream.PassThrough().end(bufferBody)
     let response = await drive.files.create({
       requestBody: {
@@ -68,7 +72,7 @@ async function uploadFile(data, fileName, parentFolderId = SECURE_FOLDER_ID) {
 
     return response.data.id;
   } catch (error) {
-    console.log("line 61",error);
+    console.log("error 61",error);
   }
 }
 
@@ -79,6 +83,10 @@ async function uploadFile(data, fileName, parentFolderId = SECURE_FOLDER_ID) {
  * @returns {string} folderId
  */
 async function createFolder(folderName, parentFolderId = SECURE_FOLDER_ID) {
+  if(parentFolderId=="root"){
+    parentFolderId=SECURE_FOLDER_ID
+
+  }
   const fileMetadata = {
     name: encrypt(AES_KEY, folderName).toString("base64"),
     mimeType: 'application/vnd.google-apps.folder',
@@ -102,7 +110,7 @@ async function getFile(fileId) {
 
     return response.data;
   } catch (error) {
-    console.log("line 98", error.message);
+    console.log("error 98", error.message);
   }
 }
 
@@ -119,7 +127,7 @@ async function deleteFile(fileID) {
     });
     return response.status;
   } catch (error) {
-    console.log("line 115",error.message);
+    console.log("error 115",error.message);
   }
 }
 
@@ -145,7 +153,7 @@ async function generatePublicUrl(fileId) {
     });
     console.log(result.data);
   } catch (error) {
-    console.log("line 141",error.message);
+    console.log("error 141",error.message);
   }
 }
 
@@ -174,9 +182,9 @@ async function getFilePath(fileId, actualPath) {
       return actualPath
     }
     fileId = file.parents[0]
-    actualPath = `/${decrypt(AES_KEY, name)}${actualPath}`
+    actualPath = `${decrypt(AES_KEY, Buffer.from(name,"base64"))}${actualPath}`
     // console.log(fileId)
-    return await getFilePath(fileId, actualPath)
+    return await getFilePath(fileId)+actualPath
   } else {
     return actualPath
   }
@@ -201,13 +209,20 @@ async function downloadFile(fileId) {
     const response = await drive.files.get({ fileId, alt: "media", fields: "*" });
     let blobData=response.data
     let bufferData=await BlobToBuffer(blobData)
-    console.log(bufferData)
     return decrypt(AES_KEY, bufferData)
   } catch (error) {
-    console.log("line 185",error);
+    console.log("error 185",error);
   }
 }
 
+async function getFileParent(fileId) {
+  try {
+    const response = await drive.files.get({ fileId, fields: "parents" });
+    return response.data.parents[0];
+  } catch (error) {
+    console.log("error 196",error);
+  }
+}
 
 async function listFiles(parentID = SECURE_FOLDER_ID) {
   if(drive=="unset"){
@@ -225,4 +240,4 @@ async function listFiles(parentID = SECURE_FOLDER_ID) {
   }
 }
 
-export { listFiles, downloadFile, getFilePath, createFolder, uploadFile, setCredentials, isDriveSet, deleteFile };
+export { listFiles, downloadFile, getFilePath, createFolder, uploadFile, setCredentials, isDriveSet, deleteFile, getFileParent };

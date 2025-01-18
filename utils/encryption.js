@@ -26,9 +26,9 @@ function encrypt(b64key, plaintext) {
 
   
   /**
-   * @param {string} ciphertext - The ciphertext to decrypt in base64 format
+   * @param {String} ciphertext - The ciphertext to decrypt in base64 format
    * @param {Buffer} key - The key to decrypt the ciphertext
-   * @returns: string
+   * @returns: Buffer
    * @description: Decrypts the ciphertext
   */
  
@@ -43,7 +43,7 @@ function encrypt(b64key, plaintext) {
       var decipher = crypto.createDecipheriv('aes-256-gcm', aesKey, nonce);
       decipher.setAuthTag(tag);
       var plaintext = decipher.update(ciphertext);
-      return Buffer.concat([plaintext, decipher.final()]).toString();
+      return Buffer.concat([plaintext, decipher.final()]);
     }catch(e){
       console.log(e)
     }

@@ -1,11 +1,11 @@
 import express from "express";
 const PORT = process.env.PORT || 3000;
 let app=express()
-import {listFiles,downloadFile,getFilePath, uploadFile, setCredentials, isDriveSet, deleteFile} from "./drive.js"
+import {listFiles,downloadFile,getFilePath, uploadFile, setCredentials, isDriveSet, deleteFile, createFolder, getFileParent} from "./drive.js"
 import dotenv from "dotenv"
 dotenv.config()
 import {encrypt,decrypt, base64ToArrayBuffer} from "./encryption.js"
-let {AES_KEY, REDIRECT_URI, CLIENT_ID} = process.env
+let {AES_KEY, REDIRECT_URI, CLIENT_ID, SECURE_FOLDER_ID} = process.env
 // old version
 // const bodyParser = require('body-parser');
 
@@ -31,6 +31,13 @@ function startWebServer(){
       res.json({message:"file deleted"})
     })
 
+    app.post("/api/createFolder/:id",async (req,res)=>{
+      let fileId=req.params.id
+      let folderName=req.body.folderName
+      let folderId=await createFolder(folderName,fileId)
+      res.json({folderId:folderId})
+    })
+
     app.get("/api/list/:id",async (req,res)=>{
       let jsonRes={files: [], path: "/"}
       if(isDriveSet()){
@@ -42,9 +49,13 @@ function startWebServer(){
         console.log("path:", path)
         let filesList=(await listFiles(fileId)).files
         filesList.forEach(file => {
-          file.name=decrypt(AES_KEY,Buffer.from(file.name,"base64"))
+          file.name=decrypt(AES_KEY,Buffer.from(file.name,"base64")).toString("utf-8")
         });
-        jsonRes={files: filesList, path: path}
+        let parentFolderId="root"
+        if(fileId!=SECURE_FOLDER_ID){
+          parentFolderId=await getFileParent(fileId)
+        }
+        jsonRes={files: filesList, path: path, parentFolderId: parentFolderId}
       }
         res.json(jsonRes)
     })
@@ -74,7 +85,7 @@ function startWebServer(){
       let size=fileData.length
       console.log(fileData)
       console.log(size)
-      
+
       let rawData=fileData
       try {
         const file = uploadFile(rawData,fileName,fileId)

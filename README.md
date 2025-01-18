@@ -6,4 +6,3 @@ Galois Drive is a web application enabling you to use Google Drive to store file
 ## TODO
 - [ ] Client Folder creation
 - [ ] Client side encryption
-- [ ] Debug mode

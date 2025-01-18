@@ -1,3 +1,12 @@
+
+#loading{
+    position: relative;
+    background-color: white;
+    border-radius: 10px;
+    height: 3px;
+    transition: width 0.5s;
+}
+
 .icon img{
     width: 50px;
 }
@@ -40,4 +49,43 @@
     height: 100vh;
     padding: 0px;
     margin: 0px;
+}
+
+#path{
+    font-size: 30px;
+    padding: 10px;
+    display: inline-block;
+}
+
+#createFolder{
+    text-align: center;
+    background-color: #F4A261;
+    font-size: 30px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+body{
+    background-color: #264653;
+    color: white;
+}
+
+#parentButton{
+    display: inline-block;
+    font-size: 40px;
+    font-weight: bold;
+    background-color: #2A9D8F;
+    border-radius: 100px;
+    width: 50px;
+    text-align: center;
+    cursor: pointer;
+}
+
+#loadingBar{
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    height: 10px;
 }

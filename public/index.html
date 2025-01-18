@@ -7,7 +7,10 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body id="drop1">
-    <div id="path">/</div>
+    <div id="loadingBar">
+        <div id="loading"></div>
+    </div>
+    <div id="parentButton" onclick="exploreParent()">^</div><div id="path">/</div>
     <div id="files">
         <div class="file">
             <div class="icon">
@@ -28,8 +31,7 @@
             <div class="name">Name 3</div>
         </div>
     </div>
-    <div id="status"></div>
-    <div id="list"></div>
+    <div id="createFolder" onclick="folderCreation()">+</div>
     <script src="script.js"></script>
 </body>
 </html>
