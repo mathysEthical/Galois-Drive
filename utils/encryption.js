@@ -17,7 +17,7 @@ function encrypt(b64key, plaintext) {
         cipher.final(), 
         cipher.getAuthTag() // Fix: Get tag with cipher.getAuthTag() and concatenate: nonce|ciphertext|tag
     ]); 
-    return nonceCiphertextTag.toString('base64');
+    return nonceCiphertextTag;
   }
   
   function getRandomIV() {
@@ -34,7 +34,7 @@ function encrypt(b64key, plaintext) {
  
   function decrypt(key, nonceCiphertextTag) {
     var aesKey = base64ToArrayBuffer(key);
-    var nonceCiphertextTag = Buffer.from(nonceCiphertextTag, 'base64');
+    var nonceCiphertextTag = nonceCiphertextTag
     var nonce = nonceCiphertextTag.slice(0, 12);
     var ciphertext = nonceCiphertextTag.slice(12, -16);
     var tag = nonceCiphertextTag.slice(-16);

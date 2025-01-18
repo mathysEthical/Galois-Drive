@@ -1,6 +1,11 @@
 let currentDir="root"
 let filesDiv=document.getElementById("files")
 let pathDiv=document.getElementById("path")
+let queryParams = new URLSearchParams(window.location.search);
+if(queryParams.get("d")!=null){
+    currentDir=queryParams.get("d")
+}
+let debugData;
 
 async function list(folderID){
     let req=await fetch("/api/list/"+folderID)
@@ -18,14 +23,24 @@ async function downloadFile(fileID,fileName){
     a.click()
 }
 
+async function deleteFile(fileID){
+    let req=await fetch("/api/delete/"+fileID, {
+        method: "DELETE"
+    })
+    let res=await req.json()
+    explore(currentDir)
+}
+
 async function explore(fileID){
     currentDir=fileID
+    window.history.pushState("","","/?d="+currentDir)
     let filesHTML=""
     let res=await list(currentDir)
     fileList=res.files
     let {path}=res
     fileList.forEach((file)=>{
         let icon="file"
+        let onclickHTMLdelete=`deleteFile('${file.id}')`
         let onclickHTML=`downloadFile('${file.id}','${file.name}')`
         if(file.mimeType=="application/vnd.google-apps.folder"){
             icon="folder"
@@ -36,30 +51,55 @@ async function explore(fileID){
                 <img src="/img/${icon}.svg">
             </div>
             <div class="name">${file.name}</div>
+            <div class="delete" onclick="${onclickHTMLdelete}">x</div>
         </div>`
     })
     filesDiv.innerHTML=filesHTML
     pathDiv.innerHTML=path
 }
 
-function arrayBufferToB64(arrayBuffer){
-    return btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
+function arrayBufferToB64(arrayBuffer) {
+    const u8 = new Uint8Array(arrayBuffer);
+    const CHUNK_SIZE = 0x8000; // 32KB per chunk
+    let b64 = '';
+
+    for (let i = 0; i < u8.length; i += CHUNK_SIZE) {
+        const chunk = u8.subarray(i, i + CHUNK_SIZE);
+        b64 += String.fromCharCode(...chunk);
+    }
+
+    return btoa(b64);
 }
 
 
 async function uploadFile(data,fileName){
+    debugData=data
+
+    // // json version
+    // let req=await fetch("/api/upload/"+currentDir,{
+    //     method:"POST",
+    //     headers:{
+    //         "Content-Type":"application/json"
+    //     },
+    //     body: JSON.stringify({
+    //         fileName: fileName,
+    //         file: arrayBufferToB64(data)
+    //     })
+    // })
+    // let res=await req.json()
+    // console.log(res)
+
+    // form version
+    let formData=new FormData()
+    formData.append("fileName",fileName)
+    formData.append("file",new Blob([data]))
     let req=await fetch("/api/upload/"+currentDir,{
         method:"POST",
-        headers:{
-            "Content-Type":"application/json"
-        },
-        body: JSON.stringify({
-            fileName: fileName,
-            file: arrayBufferToB64(data)
-        })
+        body: formData
     })
     let res=await req.json()
     console.log(res)
+
 }
 
 var drop;

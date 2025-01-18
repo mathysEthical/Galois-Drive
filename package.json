@@ -3,7 +3,10 @@
   "dependencies": {
     "dotenv": "^16.4.7",
     "express": "^4.21.1",
-    "googleapis": "^144.0.0"
+    "googleapis": "^144.0.0",
+    "multer": "^1.4.5-lts.1"
   },
-  "overrides": { "whatwg-url": "^14.0.0" }
+  "overrides": {
+    "whatwg-url": "^14.0.0"
+  }
 }
