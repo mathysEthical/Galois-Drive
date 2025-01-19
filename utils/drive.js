@@ -2,8 +2,7 @@
 import { google } from 'googleapis';
 import dotenv from "dotenv"
 dotenv.config()
-import { encrypt, decrypt, base64ToArrayBuffer } from "./encryption.js"
-const { SECURE_FOLDER_ID, AES_KEY, CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, DEBUG_REFRESH_TOKEN } = process.env
+const { SECURE_FOLDER_ID, CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, DEBUG_REFRESH_TOKEN } = process.env
 import stream from "stream"
 
 const oauth2Client = new google.auth.OAuth2(
@@ -22,7 +21,6 @@ if(DEBUG_REFRESH_TOKEN!="NO"){
       auth: oauth2Client,
     });
     console.log("connected to drive by debug token")
-    console.log("Encrpt / Descrypt test:",decrypt(AES_KEY,encrypt(AES_KEY,Buffer.from([181]))))
     
 }
 
@@ -57,12 +55,12 @@ async function uploadFile(data, fileName, parentFolderId = SECURE_FOLDER_ID) {
 
   }
   try {
-    let bufferBody=encrypt(AES_KEY, data)
+    let bufferBody=data
 
     let streamBody=new stream.PassThrough().end(bufferBody)
     let response = await drive.files.create({
       requestBody: {
-        name: encrypt(AES_KEY, fileName).toString("base64"),
+        name: fileName,
         parents: [parentFolderId],
       },
       media: {
@@ -88,7 +86,7 @@ async function createFolder(folderName, parentFolderId = SECURE_FOLDER_ID) {
 
   }
   const fileMetadata = {
-    name: encrypt(AES_KEY, folderName).toString("base64"),
+    name: folderName,
     mimeType: 'application/vnd.google-apps.folder',
     parents: [parentFolderId]
   };
@@ -167,14 +165,11 @@ function isDriveSet(){
  * @param {string} actualPath 
  * @returns {string} path
  */
-async function getFilePath(fileId, actualPath) {
+async function getFilePath(fileId) {
   if(drive=="unset"){
     console.log("Drive not set")
   }else{
-  if (typeof actualPath == "undefined") {
-    actualPath = "/"
-  }
-  if (fileId != SECURE_FOLDER_ID) {
+    if (fileId != SECURE_FOLDER_ID) {
     let file = await getFile(fileId)
     let { name } = file
 
@@ -182,34 +177,30 @@ async function getFilePath(fileId, actualPath) {
       return actualPath
     }
     fileId = file.parents[0]
-    actualPath = `${decrypt(AES_KEY, Buffer.from(name,"base64"))}${actualPath}`
+    let actualPath = `${name},`
     // console.log(fileId)
     return await getFilePath(fileId)+actualPath
   } else {
-    return actualPath
+    return ","
   }
 }
 }
 
 async function BlobToBuffer(blob){
- // without fileReadeer
   return new Uint8Array(await blob.arrayBuffer())
-  // with fileReader
-  // return new Promise((resolve, reject) => {
-  //   const reader = new FileReader();
-  //   reader.onload = () => resolve(new Uint8Array(reader.result));
-  //   reader.onerror = error => reject(error);
-  //   reader.readAsArrayBuffer(blob);
-  // });
 };
 
+function typedArrayToBuffer(array) {
+  return array.buffer.slice(array.byteOffset, array.byteLength + array.byteOffset)
+}
 
 async function downloadFile(fileId) {
   try {
     const response = await drive.files.get({ fileId, alt: "media", fields: "*" });
     let blobData=response.data
     let bufferData=await BlobToBuffer(blobData)
-    return decrypt(AES_KEY, bufferData)
+
+    return new Buffer.from(bufferData.buffer)
   } catch (error) {
     console.log("error 185",error);
   }

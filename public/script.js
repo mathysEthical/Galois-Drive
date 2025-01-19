@@ -1,4 +1,5 @@
 let currentDir="root"
+let AES_KEY=localStorage.getItem("AES_KEY")
 let filesDiv=document.getElementById("files")
 let pathDiv=document.getElementById("path")
 let queryParams = new URLSearchParams(window.location.search);
@@ -39,17 +40,24 @@ function startLoading(){
     loadingBarAnimation(progress);
 }
 
+function uint8toString(uint8array) {
+    return new TextDecoder().decode(uint8array);
+}
 
 async function list(folderID){
     let req=await fetch("/api/list/"+folderID)
     let res=await req.json()
     parent=res.parentFolderId
+    await Promise.all(res.files.map(async (file) => {
+        file.name=uint8toString(await decrypt(AES_KEY,base64ToArrayBuffer(file.name)))
+    }))
     return res
 }
 
 async function folderCreation(){
     let folderName = prompt("Please enter folder name:", "New Folder");
-    createFolder(folderName, currentDir)
+    let encryptedFolderName=arrayBufferToB64(await encrypt(AES_KEY,new TextEncoder().encode(folderName)))
+    createFolder(encryptedFolderName, currentDir)
 }
 
 async function createFolder(folderName, parentFolderId){
@@ -66,10 +74,15 @@ async function createFolder(folderName, parentFolderId){
     explore(currentDir)
 }
 
+function bufferToBlob(buffer){
+    return new Blob([buffer])
+}
+
 async function downloadFile(fileID,fileName){
     let req=await fetch("/api/download/"+fileID)
     let res=await req.blob()
-    let url=URL.createObjectURL(res)
+    let decrypted=await decrypt(AES_KEY,await BlobToBuffer(res))
+    let url=URL.createObjectURL(bufferToBlob(decrypted))
     let a=document.createElement("a")
     a.href=url
     a.download=fileName
@@ -92,6 +105,17 @@ async function explore(fileID){
     let res=await list(currentDir)
     fileList=res.files
     let {path}=res
+    let decryptedPath="";
+    await Promise.all(path.split(",").map(async (encryptedName) => {
+        if(encryptedName.length>0){
+            let decryptedName=uint8toString(await decrypt(AES_KEY,base64ToArrayBuffer(encryptedName)))
+            decryptedPath+="/"+decryptedName
+        }
+    }))
+    path=decryptedPath
+    if(path==""){
+        path="/"
+    }
     fileList.forEach((file)=>{
         let icon="file"
         let onclickHTMLdelete=`deleteFile('${file.id}')`
@@ -129,9 +153,12 @@ function arrayBufferToB64(arrayBuffer) {
 
 async function uploadFile(data,fileName){
     debugData=data
+    let encryptedFileName=arrayBufferToB64(await encrypt(AES_KEY,new TextEncoder().encode(fileName)))
+    let encryptedData=await encrypt(AES_KEY,new Uint8Array(data))
     let formData=new FormData()
-    formData.append("fileName",fileName)
-    formData.append("file",new Blob([data]))
+    formData.append("fileName",encryptedFileName)
+    formData.append("file",new Blob([encryptedData]))
+    
     let req=await fetch("/api/upload/"+currentDir,{
         method:"POST",
         body: formData
@@ -214,7 +241,20 @@ function addEventHandler(obj, evt, handler) {
 }
 
 async function start(){
+
     explore(currentDir)
+}
+
+
+function askAESkey(){
+    let key=prompt("Please enter the AES key")
+    // store AES key
+    AES_KEY=key
+    localStorage.setItem("AES_KEY",key)
+}
+
+if(AES_KEY==null){
+    askAESkey()
 }
 
 start()

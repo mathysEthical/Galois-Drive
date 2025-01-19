@@ -4,8 +4,7 @@ let app=express()
 import {listFiles,downloadFile,getFilePath, uploadFile, setCredentials, isDriveSet, deleteFile, createFolder, getFileParent} from "./drive.js"
 import dotenv from "dotenv"
 dotenv.config()
-import {encrypt,decrypt, base64ToArrayBuffer} from "./encryption.js"
-let {AES_KEY, REDIRECT_URI, CLIENT_ID, SECURE_FOLDER_ID} = process.env
+let { REDIRECT_URI, CLIENT_ID, SECURE_FOLDER_ID} = process.env
 // old version
 // const bodyParser = require('body-parser');
 
@@ -46,11 +45,8 @@ function startWebServer(){
           fileId=process.env.SECURE_FOLDER_ID
         }
         let path=await getFilePath(fileId)
-        console.log("path:", path)
         let filesList=(await listFiles(fileId)).files
-        filesList.forEach(file => {
-          file.name=decrypt(AES_KEY,Buffer.from(file.name,"base64")).toString("utf-8")
-        });
+
         let parentFolderId="root"
         if(fileId!=SECURE_FOLDER_ID){
           parentFolderId=await getFileParent(fileId)
