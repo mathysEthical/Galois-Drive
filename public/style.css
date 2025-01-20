@@ -23,7 +23,7 @@
 }
 
 .file:hover{
-    background-color: rgb(217, 217, 217);
+    background-color: #2A9D8F;
 }
 
 .delete{
@@ -88,4 +88,29 @@ body{
     width: 100%;
     z-index: 1000;
     height: 10px;
+}
+
+#rightClickMenu{
+    border-radius: 5px;
+    padding: 0px;
+    display: none;
+    position: absolute;
+    box-shadow: 0px 0px 5px 0px black;
+    overflow: hidden;
+    
+}
+
+.rMenuItem{
+    background: #2a9d8f;
+    cursor: pointer;
+    padding: 10px;
+    font-size: 20px;
+}
+
+.rMenuItem:hover{
+    background-color: #264653;
+}
+
+body{
+    font-family: sans-serif;
 }

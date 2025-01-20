@@ -6,6 +6,13 @@ let queryParams = new URLSearchParams(window.location.search);
 let loadingBar=document.getElementById("loading")
 let parent="root"
 let isLoading=false;
+
+// right click menu
+let rightClickMenu=document.getElementById("rightClickMenu")
+let rightClickMenuVisible=false;
+let rightClickMenuX=0;
+let rightClickMenuY=0;
+
 if(queryParams.get("d")!=null){
     currentDir=queryParams.get("d")
 }
@@ -118,18 +125,16 @@ async function explore(fileID){
     }
     fileList.forEach((file)=>{
         let icon="file"
-        let onclickHTMLdelete=`deleteFile('${file.id}')`
         let onclickHTML=`downloadFile('${file.id}','${file.name}')`
         if(file.mimeType=="application/vnd.google-apps.folder"){
             icon="folder"
             onclickHTML=`explore('${file.id}')`
         }
-        filesHTML+=`<div class="file" ondblclick="${onclickHTML}">
+        filesHTML+=`<div id="${file.id}" class="file" ondblclick="${onclickHTML}">
             <div class="icon">
                 <img src="/img/${icon}.svg">
             </div>
             <div class="name">${file.name}</div>
-            <div class="delete" onclick="${onclickHTMLdelete}">x</div>
         </div>`
     })
     filesDiv.innerHTML=filesHTML
@@ -258,3 +263,55 @@ if(AES_KEY==null){
 }
 
 start()
+
+
+
+
+function showRightClickMenu(x,y){
+    rightClickMenu.style.display="block"
+    rightClickMenu.style.left=`${x}px`
+    rightClickMenu.style.top=`${y}px`
+    rightClickMenuVisible=true;
+    rightClickMenuX=x
+    rightClickMenuY=y
+}
+
+function hideRightClickMenu(){
+    rightClickMenu.style.display="none"
+    rightClickMenuVisible=false;
+}
+
+window.addEventListener("click",(e)=>{
+    if(rightClickMenuVisible){
+        hideRightClickMenu()
+    }
+})
+
+function searchParentClass(element, className){
+    if(element.classList.contains(className)){
+        return element
+    }else{
+        if(element.parentElement){
+            return searchParentClass(element.parentElement,className)
+        }else{
+            return false
+        }
+    }
+}
+
+window.addEventListener("contextmenu",(e)=>{
+    e.preventDefault()
+    let target=e.target
+
+    let parentFile=searchParentClass(target,"file")
+
+    if(parentFile!==false){
+        rightClickMenu.innerHTML=`<div class="rMenuItem" onclick="deleteFile('${parentFile.id}')">Delete</div>
+        <div class="rMenuItem" onclick="downloadFile('${parentFile.id}','${parentFile.querySelector(".name").innerText}')">Download</div>
+        <div class="rMenuItem" onclick="folderCreation()">New Folder</div>`
+    }else{
+        rightClickMenu.innerHTML=`<div class="rMenuItem" onclick="folderCreation()">New Folder</div>`
+    }
+    // show right click menu cosidering the scroll
+    showRightClickMenu(e.clientX + window.scrollX,e.clientY + window.scrollY) 
+})
