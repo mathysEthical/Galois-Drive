@@ -1,7 +1,7 @@
 import express from "express";
 const PORT = process.env.PORT || 3000;
 let app=express()
-import {listFiles,downloadFile,getFilePath, uploadFile, setCredentials, isDriveSet, deleteFile, createFolder, getFileParent} from "./drive.js"
+import {listFiles,downloadFile,getFilePath, uploadFile, setCredentials, isDriveSet, deleteFile, createFolder, getFileParent, renameFile} from "./drive.js"
 import dotenv from "dotenv"
 dotenv.config()
 let { CLIENT_ID, SECURE_FOLDER_ID, HOST} = process.env
@@ -74,6 +74,13 @@ function startWebServer(){
       setTimeout(() => {
         res.redirect("/")
       }, 2000);
+    })
+
+    app.post("/api/rename/:id",async (req,res)=>{ 
+      let fileId=req.params.id
+      let newName=req.body.newName
+      let response=await renameFile(fileId,newName)
+      res.json({message: response})
     })
 
     app.post("/api/upload/:id",upload.any(),async (req,res)=>{

@@ -104,6 +104,20 @@ async function createFolder(folderName, parentFolderId = SECURE_FOLDER_ID) {
   }
 }
 
+async function renameFile(fileId, newName) {
+  try {
+    const response = await drive.files.update({
+      fileId: fileId,
+      requestBody: {
+        name: newName,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    return error.message;
+  }
+}
+
 async function getFile(fileId) {
   try {
     const response = await drive.files.get({ fileId, fields: "*" });
@@ -233,4 +247,4 @@ async function listFiles(parentID = SECURE_FOLDER_ID) {
   }
 }
 
-export { listFiles, downloadFile, getFilePath, createFolder, uploadFile, setCredentials, isDriveSet, deleteFile, getFileParent };
+export { listFiles, downloadFile, getFilePath, createFolder, uploadFile, setCredentials, isDriveSet, deleteFile, getFileParent, renameFile };

@@ -11,7 +11,7 @@ Galois Drive is a web application enabling you to use Google Drive to store file
 - [x] Delete files
 - [x] Right click menu
 - [x] Client side encryption
+- [x] Rename files
 
 ## TODO
 - [ ] Move files
-- [ ] Rename files

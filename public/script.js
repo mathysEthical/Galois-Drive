@@ -287,6 +287,22 @@ window.addEventListener("click",(e)=>{
     }
 })
 
+async function renameFile(fileID){
+    let newName=prompt("Please enter new name")
+    let encryptedName=arrayBufferToB64(await encrypt(AES_KEY,new TextEncoder().encode(newName)))
+    let req=await fetch("/api/rename/"+fileID,{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body: JSON.stringify({
+            newName: encryptedName
+        })
+    })
+    let res=await req.json()
+    explore(currentDir)
+}
+
 function searchParentClass(element, className){
     if(element.classList.contains(className)){
         return element
@@ -309,6 +325,7 @@ window.addEventListener("contextmenu",(e)=>{
         rightClickMenu.innerHTML=`
         <div class="rMenuItem" onclick="downloadFile('${parentFile.id}','${parentFile.querySelector(".name").innerText}')">Download</div>
         <div class="rMenuItem" onclick="deleteFile('${parentFile.id}')">Delete</div>
+        <div class="rMenuItem" onclick="renameFile('${parentFile.id}')">Rename</div>
         <div class="rMenuItem" onclick="folderCreation()">New Folder</div>`
     }else{
         rightClickMenu.innerHTML=`<div class="rMenuItem" onclick="folderCreation()">New Folder</div>`
