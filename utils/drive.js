@@ -2,8 +2,9 @@
 import { google } from 'googleapis';
 import dotenv from "dotenv"
 dotenv.config()
-const { SECURE_FOLDER_ID, CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, DEBUG_REFRESH_TOKEN } = process.env
+const { SECURE_FOLDER_ID, CLIENT_ID, CLIENT_SECRET, DEBUG_REFRESH_TOKEN, DEBUG, HOST } = process.env
 import stream from "stream"
+let REDIRECT_URI = HOST+"/setCredentials"
 
 const oauth2Client = new google.auth.OAuth2(
   CLIENT_ID,
@@ -14,7 +15,7 @@ const oauth2Client = new google.auth.OAuth2(
 
 let drive = "unset";
 
-if(DEBUG_REFRESH_TOKEN!="NO"){
+if(DEBUG=="YES"){
     oauth2Client.setCredentials({ refresh_token: DEBUG_REFRESH_TOKEN });
       
     drive = google.drive({

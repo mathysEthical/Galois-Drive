@@ -4,7 +4,9 @@ let app=express()
 import {listFiles,downloadFile,getFilePath, uploadFile, setCredentials, isDriveSet, deleteFile, createFolder, getFileParent} from "./drive.js"
 import dotenv from "dotenv"
 dotenv.config()
-let { REDIRECT_URI, CLIENT_ID, SECURE_FOLDER_ID} = process.env
+let { CLIENT_ID, SECURE_FOLDER_ID, HOST} = process.env
+let REDIRECT_URI=HOST+"/setCredentials"
+
 // old version
 // const bodyParser = require('body-parser');
 

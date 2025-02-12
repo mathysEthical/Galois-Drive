@@ -20,25 +20,11 @@
 
 .file{
     margin: 10px;
+    user-select: none;
 }
 
 .file:hover{
     background-color: #2A9D8F;
-}
-
-.delete{
-    right: 20px;
-    position: absolute;
-    background-color: red;
-    color: white;
-    padding: 5px;
-    margin: 5px;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 20px;
-    height: 20px;
-    text-align: center;
-    vertical-align: middle;
 }
 
 .name{

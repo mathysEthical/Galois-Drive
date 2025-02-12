@@ -306,8 +306,9 @@ window.addEventListener("contextmenu",(e)=>{
     let parentFile=searchParentClass(target,"file")
 
     if(parentFile!==false){
-        rightClickMenu.innerHTML=`<div class="rMenuItem" onclick="deleteFile('${parentFile.id}')">Delete</div>
+        rightClickMenu.innerHTML=`
         <div class="rMenuItem" onclick="downloadFile('${parentFile.id}','${parentFile.querySelector(".name").innerText}')">Download</div>
+        <div class="rMenuItem" onclick="deleteFile('${parentFile.id}')">Delete</div>
         <div class="rMenuItem" onclick="folderCreation()">New Folder</div>`
     }else{
         rightClickMenu.innerHTML=`<div class="rMenuItem" onclick="folderCreation()">New Folder</div>`
